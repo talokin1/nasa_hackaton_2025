@@ -43,7 +43,7 @@ const GalaxyModule = {
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000000);
+        this.camera = new THREE.PerspectiveCamera(75, width / height, 0.0001, 1000000);
         this.camera.position.set(0, 500, 1000);
         this.camera.lookAt(EarthPos.x, EarthPos.y, EarthPos.z);
 
@@ -634,7 +634,7 @@ const GalaxyModule = {
         const newLength = this.camera.position.length() * zoom;
 
         // Increased minimum distance to prevent zooming past stars
-        if (newLength > 100 && newLength < 50000) {
+        if (newLength > 0.1 && newLength < 30000) {
             this.camera.position.multiplyScalar(zoom);
             this.camera.lookAt(0, 0, 0);
             this.updateStarSizes();
@@ -663,7 +663,7 @@ const GalaxyModule = {
 
         if (this.earthIndicator) {
             const time = Date.now() * 0.001;
-            const scale = 1 + Math.sin(time * 2) * 0.1;
+            const scale = 1 + Math.sin(time * 2) * 0.01;
             this.earthIndicator.scale.set(scale, scale, scale);
         }
 
