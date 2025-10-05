@@ -17,7 +17,7 @@ const GalaxyModule = {
     },
     currentZoom: 1,
     pointSizeConfig: {
-        min: 2,
+        min: 10,
         max: 20,
         base: 10
     },
@@ -151,7 +151,7 @@ const GalaxyModule = {
             const x = radius * Math.cos(theta);
             const z = radius * Math.sin(theta);
 
-            positions.push(x, y, z);
+            positions.push(x - EarthPos.x, y - EarthPos.y, z - EarthPos.z);
 
             const intensity = 0.5 + Math.random() * 0.4;
             colors.push(intensity * 0.9, intensity * 0.9, intensity);
@@ -166,7 +166,7 @@ const GalaxyModule = {
             const y = radius * Math.sin(phi) * Math.sin(theta) * 0.6;
             const z = radius * Math.cos(phi);
 
-            positions.push(x, y, z);
+            positions.push(x - EarthPos.x, y - EarthPos.y, z - EarthPos.z);
 
             const intensity = 0.4 + Math.random() * 0.3;
             colors.push(intensity * 0.8, intensity * 0.8, intensity * 0.9);
@@ -184,9 +184,18 @@ const GalaxyModule = {
             sizeAttenuation: true,
             map: this.createCircleTexture(),
         });
+        
+        const galaxyFarMaterial = new THREE.PointsMaterial({
+            size: 1,
+            color: 0xcccccc,
+            vertexColors: true,
+            sizeAttenuation: false,
+        });
 
         this.galaxyBackground = new THREE.Points(galaxyGeometry, galaxyMaterial);
+        this.galaxyBackground_far = new THREE.Points(galaxyGeometry, galaxyFarMaterial);
         this.scene.add(this.galaxyBackground);
+        this.scene.add(this.galaxyBackground_far);
 
         const dustGeometry = new THREE.BufferGeometry();
         const dustVertices = [];
@@ -208,7 +217,7 @@ const GalaxyModule = {
                 const z = finalRadius * Math.sin(finalAngle);
                 const y = (Math.random() - 0.5) * 80;
 
-                dustVertices.push(x - EarthPos.x, y - EarthPos.x, z - EarthPos.x);
+                dustVertices.push(x - EarthPos.x, y - EarthPos.y, z - EarthPos.z);
 
                 const intensity = 0.1 + Math.random() * 0.15;
                 dustColors.push(intensity, intensity * 0.8, intensity * 0.6);
@@ -474,12 +483,48 @@ const GalaxyModule = {
 
         this.starPoints.material.size = finalSize;
         
+        // When zoomed out far, make stars appear as bright white dots
+        const farThreshold = 5000; // Distance at which stars start becoming white dots
+        const veryFarThreshold = 1000000; // Distance at which all stars are white dots
+        
+        if (cameraDistance > farThreshold) {
+            const colors = this.starPoints.geometry.attributes.color.array;
+            const whiteFactor = Math.min(1, (cameraDistance - farThreshold) / (veryFarThreshold - farThreshold));
+            
+            for (let i = 0; i < colors.length / 3; i++) {
+                // Skip the currently hovered star
+                if (i === this.hoveredStarIndex) continue;
+                
+                const baseR = this.originalColors[i * 3];
+                const baseG = this.originalColors[i * 3 + 1];
+                const baseB = this.originalColors[i * 3 + 2];
+                
+                // Interpolate towards white (1, 1, 1)
+                colors[i * 3] = baseR + (1 - baseR) * whiteFactor;
+                colors[i * 3 + 1] = baseG + (1 - baseG) * whiteFactor;
+                colors[i * 3 + 2] = baseB + (1 - baseB) * whiteFactor;
+            }
+            
+            this.starPoints.geometry.attributes.color.needsUpdate = true;
+        } else {
+            // Restore original colors when zoomed in
+            const colors = this.starPoints.geometry.attributes.color.array;
+            for (let i = 0; i < colors.length / 3; i++) {
+                if (i === this.hoveredStarIndex) continue;
+                
+                colors[i * 3] = this.originalColors[i * 3];
+                colors[i * 3 + 1] = this.originalColors[i * 3 + 1];
+                colors[i * 3 + 2] = this.originalColors[i * 3 + 2];
+            }
+            this.starPoints.geometry.attributes.color.needsUpdate = true;
+        }
+        
         // Update hitbox visuals when zoom changes
         if (this.debugHitboxes) {
             this.updateHitboxVisuals();
         }
     },
-
+    
     setupControls() {
         const container = this.renderer.domElement;
 
