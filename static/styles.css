@@ -141,6 +141,16 @@ body {
     font-size: 12px;
 }
 
+.name-input {
+    width: 100%;
+    padding: 5px;
+    background: rgba(20, 20, 40, 0.8);
+    border: 1px solid rgba(100, 100, 255, 0.3);
+    border-radius: 3px;
+    color: #e0e0e0;
+    font-size: 12px;
+}
+
 .filter-slider {
     flex: 1;
     -webkit-appearance: none;

@@ -234,7 +234,9 @@ def get_data(dataset_name):
                        (filtered_df[column] <= max_val)
                 filtered_df = filtered_df[mask]
             except:
-                pass
+                value = request.args.get(column)
+                mask = filtered_df[column].notna() & (filtered_df[column].map(lambda x: str(x).strip()) == value)
+                filtered_df = filtered_df[mask]
 
     # Group by star and include prediction if available
     agg_dict = {
@@ -246,14 +248,19 @@ def get_data(dataset_name):
         'stellar_radius': 'first',
         'planet_name': 'count'
     }
+    planet_names = {
+        'planet_name': 'first'
+    }
 
     # Add prediction to aggregation if it exists
     if 'prediction' in filtered_df.columns:
         agg_dict['prediction'] = 'max'  # Take max prediction for the star system
 
     star_groups = filtered_df.groupby('star_name').agg(agg_dict).reset_index()
+    star_groups_planet_names = filtered_df.groupby('star_name').agg(planet_names).reset_index()
 
     star_groups.rename(columns={'planet_name': 'num_planets'}, inplace=True)
+    star_groups = pd.merge(star_groups, star_groups_planet_names, on='star_name', how='left')
 
     if len(star_groups) > max_stars:
         star_groups = star_groups.sample(n=max_stars, random_state=42)

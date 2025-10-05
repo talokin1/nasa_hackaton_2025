@@ -15,6 +15,17 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log('All modules initialized successfully');
 });
 
+document.querySelector('.name-input').addEventListener('keydown', async function(event) {
+  if (event.key === 'Enter') {
+    const response = await fetch(`/api/data/${InputModule.currentDataset}?planet_name=${this.value}`);
+    const data = await response.json();
+    if (data.length > 0) {
+        const star = data[0]['star_name'];
+        StarSystemModule.open(star);
+    }
+  }
+});
+
 // Handle window resize
 window.addEventListener('resize', () => {
     GalaxyModule.handleResize();
