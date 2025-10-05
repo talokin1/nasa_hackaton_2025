@@ -426,8 +426,18 @@ const GalaxyModule = {
             map: this.createCircleTexture(),
         });
 
+        const galaxyFarMaterial = new THREE.PointsMaterial({
+            size: 1,
+            color: 0xcccccc,
+            vertexColors: true,
+            sizeAttenuation: false,
+        });
+
         this.starPoints = new THREE.Points(starsGeometry, starsMaterial);
+        this.galaxyBackground_far = new THREE.Points(starsGeometry, galaxyFarMaterial);
+
         this.scene.add(this.starPoints);
+        this.scene.add(this.galaxyBackground_far);
 
         this.updateStarSizes();
         this.updateHitboxVisuals();

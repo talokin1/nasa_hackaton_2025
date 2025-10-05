@@ -72,7 +72,12 @@ def get_dynamic_filters(df):
 
     filter_configs = {
         'stellar_temp': {'label': 'Star Temperature', 'unit': 'K', 'step': 100},
-        'period': {'label': 'Orbital Period', 'unit': 'days', 'step': 1}
+        'period': {'label': 'Orbital Period', 'unit': 'days', 'step': 1},
+        'planet_radius': {'label': 'Planet Radius', 'unit': 'R⊕', 'step': 0.5},
+        'planet_temp': {'label': 'Planet Temperature', 'unit': 'K', 'step': 50},
+        'distance_pc': {'label': 'Distance', 'unit': 'pc', 'step': 5},
+        'stellar_mass': {'label': 'Stellar Mass', 'unit': 'M☉', 'step': 0.1},
+        'trans_depth': {'label': 'Transit Depth', 'unit': 'ppm', 'step': 100}
     }
 
     for col, config in filter_configs.items():
